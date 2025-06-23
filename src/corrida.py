@@ -2,6 +2,10 @@ import threading
 import queue
 import time
 import random
+from colorama import init, Fore, Style
+
+# Inicializa a colorama
+init(autoreset=True)
 
 # Queues de comunicação
 status_queue = queue.Queue()
@@ -13,9 +17,10 @@ def carro_corrida():
     combustivel = 100
     pneus = 100
     velocidade = 200  # km/h média
+
     for volta in range(1, voltas + 1):
-        print(f"\n[Carro] Iniciando volta {volta}")
-        
+        print(Fore.CYAN + f"\n==================== VOLTA {volta} ====================")
+
         # Simula desgaste
         combustivel -= random.randint(5, 10)
         pneus -= random.randint(3, 8)
@@ -27,37 +32,42 @@ def carro_corrida():
             'pneus': pneus,
             'velocidade': velocidade
         }
+
+        print(Fore.BLUE + f"[Carro] 🚗 Enviando status: Combustível = {combustivel}%, Pneus = {pneus}%, Velocidade = {velocidade} km/h")
         status_queue.put(status)
 
         # Aguarda comando da equipe
         comando = command_queue.get()
+
         if comando == 'box':
-            print("[Carro] Entrando nos boxes para reabastecer e trocar pneus.")
+            print(Fore.YELLOW + "[Carro] 🏁 Entrando nos BOXES para reabastecimento e troca de pneus...")
             time.sleep(2)
             combustivel = 100
             pneus = 100
+            print(Fore.YELLOW + "[Carro] ✅ Pronto para voltar à pista!")
         elif comando == 'reduzir':
-            print("[Carro] Reduzindo velocidade.")
+            print(Fore.YELLOW + "[Carro] ⚠️ Reduzindo velocidade.")
             velocidade -= 20
         elif comando == 'acelerar':
-            print("[Carro] Acelerando ao máximo!")
+            print(Fore.YELLOW + "[Carro] 🟢 Acelerando ao máximo!")
             velocidade += 20
         else:
-            print("[Carro] Continuando normalmente.")
-        
+            print(Fore.YELLOW + "[Carro] ➡️ Mantendo ritmo de corrida.")
+
         # Simula tempo da volta
         time.sleep(1)
 
-    print("\n[Carro] Corrida finalizada!")
+    print(Fore.CYAN + "\n🏁 [Carro] Corrida finalizada! 🏆")
 
 # Função da thread da equipe
 def equipe_tecnica():
     while True:
         status = status_queue.get()
-        print(f"[Equipe] Status recebido: Volta {status['volta']} | Combustível: {status['combustivel']}% | Pneus: {status['pneus']}%")
 
-        # Decide o comando
-        if status['combustivel'] < 30 or status['pneus'] < 25:
+        print(Fore.GREEN + f"[Equipe] 📡 Recebido: Volta {status['volta']} | Combustível = {status['combustivel']}% | Pneus = {status['pneus']}% | Velocidade = {status['velocidade']} km/h")
+
+        # Lógica de decisão
+        if status['combustivel'] < 50 or status['pneus'] < 45:
             comando = 'box'
         elif status['velocidade'] > 220:
             comando = 'reduzir'
@@ -65,22 +75,19 @@ def equipe_tecnica():
             comando = 'acelerar'
         else:
             comando = 'manter'
-        
-        # Envia comando
-        print(f"[Equipe] Enviando comando: {comando.upper()}")
+
+        print(Fore.GREEN + f"[Equipe] 🗣️ Comando: {comando.upper()}")
         command_queue.put(comando)
 
         if status['volta'] == 10:
             break
 
-# Criando as threads
+# Criando e iniciando as threads
 thread_carro = threading.Thread(target=carro_corrida)
 thread_equipe = threading.Thread(target=equipe_tecnica)
 
-# Iniciando as threads
 thread_carro.start()
 thread_equipe.start()
 
-# Aguardando finalização
 thread_carro.join()
 thread_equipe.join()
