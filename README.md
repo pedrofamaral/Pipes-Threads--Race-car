@@ -29,7 +29,4 @@ Simular o comportamento de um carro de corrida durante 10 voltas, com troca cont
 ## 🛠️ Execução
 
 1. Abra a pasta `src` no terminal.
-2. Execute o código com:
-
-   ```bash
-   python corrida.py
+2. Execute o código em alguma IDE compativel com a linguagem C.
